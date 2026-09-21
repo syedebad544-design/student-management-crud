@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Classroom — Student Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F6FB;
+    --surface:#FFFFFF;
+    --surface-2:#FBFAFF;
+    --ink:#221D32;
+    --ink-soft:#6B6480;
+    --ink-faint:#9992AC;
+    --line:#E8E5F2;
+    --line-soft:#F0EEF8;
+
+    --violet:#6D5DF6;
+    --violet-deep:#5647D9;
+    --pink:#FF6FA5;
+    --cyan:#22C7D6;
+
+    --grad: linear-gradient(120deg, #5647D9 0%, #6D5DF6 38%, #C065F0 68%, #FF6FA5 100%);
+
+    --success:#17A673;
+    --success-wash:#E4F8F0;
+    --danger:#EF4457;
+    --danger-wash:#FDECEF;
+
+    --display:'Space Grotesk', 'Inter', sans-serif;
+    --sans:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --radius:16px;
+    --shadow:0 2px 6px rgba(34,29,50,0.05), 0 14px 34px rgba(34,29,50,0.07);
+    --shadow-sm:0 1px 2px rgba(34,29,50,0.05), 0 4px 10px rgba(34,29,50,0.05);
+
+    --dept-cs:#6D5DF6;
+    --dept-se:#14B8A6;
+    --dept-ba:#F59E0B;
+    --dept-ee:#F43F5E;
+    --dept-ma:#2E90F0;
+    --dept-ot:#64748B;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#131019;
+      --surface:#1C1826;
+      --surface-2:#221D2E;
+      --ink:#F1EFF8;
+      --ink-soft:#B0A9C4;
+      --ink-faint:#756E8C;
+      --line:#332C46;
+      --line-soft:#292236;
+      --success-wash:#12352A;
+      --danger-wash:#3A1B22;
+      --shadow:0 2px 6px rgba(0,0,0,0.25), 0 14px 34px rgba(0,0,0,0.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#131019; --surface:#1C1826; --surface-2:#221D2E; --ink:#F1EFF8; --ink-soft:#B0A9C4; --ink-faint:#756E8C;
+    --line:#332C46; --line-soft:#292236; --success-wash:#12352A; --danger-wash:#3A1B22;
+    --shadow:0 2px 6px rgba(0,0,0,0.25), 0 14px 34px rgba(0,0,0,0.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.25);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+    padding-bottom:calc(48px + env(safe-area-inset-bottom,0px));
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1100px; margin:0 auto; padding:0 22px; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:var(--grad);
+    background-size:180% 180%;
+    animation:heroShift 14s ease infinite;
+    padding:calc(38px + env(safe-area-inset-top,0px)) 0 54px;
+    margin-bottom:-34px;
+  }
+  @keyframes heroShift{
+    0%{ background-position:0% 40%; }
+    50%{ background-position:100% 60%; }
+    100%{ background-position:0% 40%; }
+  }
+  .hero-inner{ display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .hero-title{ display:flex; align-items:center; gap:14px; }
+  .hero-mark{
+    width:46px; height:46px; border-radius:13px; background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; flex:none;
+    backdrop-filter:blur(6px);
+  }
+  .hero h1{ font-family:var(--display); color:#fff; font-size:1.9rem; font-weight:700; margin:0; letter-spacing:-0.01em; }
+  .hero p{ color:rgba(255,255,255,0.82); margin:3px 0 0; font-size:0.94rem; }
+
+  .stat-row{ display:flex; gap:12px; margin-top:26px; flex-wrap:wrap; }
+  .stat-tile{
+    flex:1 1 150px; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28);
+    border-radius:14px; padding:14px 18px; backdrop-filter:blur(8px);
+  }
+  .stat-tile b{ display:block; font-family:var(--display); color:#fff; font-size:1.7rem; font-weight:700; line-height:1.15; }
+  .stat-tile span{ color:rgba(255,255,255,0.82); font-size:0.8rem; font-weight:500; }
+
+  /* ---------- Layout ---------- */
+  .grid{ display:grid; grid-template-columns:340px 1fr; gap:22px; align-items:start; position:relative; z-index:1; }
+  @media (max-width:880px){ .grid{ grid-template-columns:1fr; } }
+
+  .panel{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+
+  /* ---------- Form card ---------- */
+  .entry-card{ padding:4px; overflow:hidden; }
+  .entry-card-top{ height:6px; background:var(--grad); background-size:220% 100%; }
+  .entry-card-body{ padding:24px 24px 22px; }
+  .entry-card h2{ font-family:var(--display); font-size:1.24rem; font-weight:700; margin:0 0 3px; }
+  .entry-card .sub{ color:var(--ink-soft); font-size:0.85rem; margin:0 0 20px; }
+
+  .field{ margin-bottom:15px; }
+  .field label{ display:block; font-size:0.79rem; font-weight:600; color:var(--ink-soft); margin-bottom:6px; }
+  .field input, .field select{
+    width:100%; padding:10px 12px; font-size:0.93rem; font-family:var(--sans);
+    color:var(--ink); background:var(--surface-2); border:1.5px solid var(--line);
+    border-radius:10px; outline:none; transition:border-color .15s ease, box-shadow .15s ease;
+    appearance:none; -webkit-appearance:none;
+  }
+  .field select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6480' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center; padding-right:32px;
+  }
+  .field input:focus, .field select:focus{ border-color:var(--violet); box-shadow:0 0 0 4px rgba(109,93,246,0.14); }
+  .field.invalid input, .field.invalid select{ border-color:var(--danger); }
+  .field .err{ display:none; color:var(--danger); font-size:0.77rem; margin-top:5px; }
+  .field.invalid .err{ display:block; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .form-actions{ display:flex; flex-direction:column; gap:9px; margin-top:18px; }
+  .btn{
+    font-family:var(--sans); font-weight:600; font-size:0.92rem; border-radius:10px; padding:11px 16px;
+    border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+    gap:8px; transition:transform .12s ease, box-shadow .12s ease, background .15s ease;
+  }
+  .btn:active{ transform:translateY(1px) scale(0.99); }
+  .btn-grad{ background:var(--grad); background-size:160% 100%; color:#fff; box-shadow:0 8px 20px rgba(109,93,246,0.28); }
+  .btn-grad:hover{ background-position:100% 0; box-shadow:0 10px 26px rgba(109,93,246,0.38); }
+  .btn-ghost{ background:transparent; color:var(--ink-soft); border-color:var(--line); }
+  .btn-ghost:hover{ border-color:var(--ink-faint); color:var(--ink); }
+  .btn-icon{ width:32px; height:32px; padding:0; border-radius:9px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink-soft); }
+  .btn-icon:hover{ border-color:var(--violet); color:var(--violet); background:rgba(109,93,246,0.08); }
+  .btn-icon.danger:hover{ border-color:var(--danger); color:var(--danger); background:var(--danger-wash); }
+
+  /* ---------- List panel ---------- */
+  .list-card{ padding:22px 0 4px; }
+  .list-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:0 24px 14px; flex-wrap:wrap; }
+  .list-head h2{ font-family:var(--display); font-size:1.24rem; font-weight:700; margin:0; }
+  .search{ position:relative; width:230px; max-width:100%; }
+  .search svg{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--ink-faint); }
+  .search input{
+    width:100%; padding:8px 12px 8px 34px; font-size:0.87rem; font-family:var(--sans);
+    background:var(--surface-2); border:1.5px solid var(--line); border-radius:10px; color:var(--ink); outline:none;
+  }
+  .search input:focus{ border-color:var(--violet); box-shadow:0 0 0 4px rgba(109,93,246,0.14); }
+
+  .chip-row{ display:flex; gap:8px; padding:0 24px 16px; flex-wrap:wrap; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-size:0.78rem; font-weight:600;
+    padding:6px 12px; border-radius:999px; border:1.5px solid var(--line); background:var(--surface-2);
+    color:var(--ink-soft); cursor:pointer; transition:all .12s ease; user-select:none;
+  }
+  .chip .dot{ width:7px; height:7px; border-radius:50%; background:var(--dot,var(--ink-faint)); }
+  .chip:hover{ border-color:var(--ink-faint); }
+  .chip.active{ background:var(--dot,var(--violet)); border-color:var(--dot,var(--violet)); color:#fff; }
+  .chip.active .dot{ background:#fff; }
+
+  .table-scroll{ overflow-x:auto; padding:0 4px; }
+  table{ width:100%; border-collapse:collapse; min-width:660px; }
+  thead th{
+    text-align:left; font-weight:600; font-size:0.74rem; color:var(--ink-faint); letter-spacing:0.02em;
+    padding:9px 12px; border-bottom:1.5px solid var(--line);
+  }
+  thead th:first-child{ padding-left:24px; }
+  thead th:last-child{ padding-right:24px; text-align:right; }
+  tbody td{ padding:11px 12px; border-bottom:1px solid var(--line-soft); font-size:0.89rem; vertical-align:middle; }
+  tbody td:first-child{ padding-left:24px; }
+  tbody td:last-child{ padding-right:24px; text-align:right; }
+  tbody tr{ transition:background .12s ease; }
+  tbody tr:hover{ background:var(--surface-2); }
+
+  .who{ display:flex; align-items:center; gap:10px; }
+  .avatar{
+    width:34px; height:34px; border-radius:10px; flex:none; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:var(--display); font-weight:700; font-size:0.8rem; background:var(--dot,var(--violet));
+  }
+  .who-name{ font-weight:600; line-height:1.2; }
+  .who-roll{ color:var(--ink-faint); font-size:0.78rem; }
+
+  .dept-tag{
+    display:inline-flex; align-items:center; gap:6px; font-size:0.76rem; font-weight:600;
+    color:var(--dot,var(--violet)); background:color-mix(in srgb, var(--dot,var(--violet)) 12%, transparent);
+    border-radius:999px; padding:4px 10px 4px 8px;
+  }
+  .dept-tag .dot{ width:6px; height:6px; border-radius:50%; background:var(--dot,var(--violet)); }
+
+  .row-actions{ display:flex; gap:6px; justify-content:flex-end; }
+  tr.row-enter{ animation:rowEnter .5s ease; }
+  @keyframes rowEnter{
+    from{ background:var(--success-wash); opacity:0; transform:translateY(-4px); }
+    to{ background:transparent; opacity:1; transform:translateY(0); }
+  }
+
+  .empty{ text-align:center; padding:56px 24px 44px; color:var(--ink-soft); }
+  .empty-icon{
+    width:56px; height:56px; border-radius:16px; background:var(--grad); margin:0 auto 16px;
+    display:flex; align-items:center; justify-content:center; color:#fff;
+  }
+  .empty p{ margin:0; font-size:0.92rem; }
+  .empty span{ display:block; font-family:var(--display); font-size:1.1rem; font-weight:700; color:var(--ink); margin-bottom:4px; }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(19,16,25,0.55); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; padding:20px; z-index:1000;
+    opacity:0; pointer-events:none; transition:opacity .15s ease;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  .modal{
+    background:var(--surface); border-radius:18px; max-width:380px; width:100%; padding:26px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.3); transform:translateY(8px) scale(0.98); transition:transform .15s ease;
+    border:1px solid var(--line);
+  }
+  .overlay.open .modal{ transform:translateY(0) scale(1); }
+  .modal h3{ font-family:var(--display); margin:0 0 8px; font-size:1.12rem; font-weight:700; display:flex; align-items:center; gap:9px; color:var(--danger); }
+  .modal p{ margin:0 0 22px; color:var(--ink-soft); font-size:0.92rem; line-height:1.5; }
+  .modal-actions{ display:flex; gap:10px; justify-content:flex-end; }
+  .modal-actions .btn{ padding:9px 16px; }
+  .btn-danger{ background:var(--danger); color:#fff; }
+  .btn-danger:hover{ background:#D6394B; }
+
+  /* ---------- Toasts ---------- */
+  .toast-host{
+    position:fixed; top:calc(20px + env(safe-area-inset-top,0px)); right:20px; z-index:1100;
+    display:flex; flex-direction:column; gap:8px; max-width:300px;
+  }
+  .toast{
+    background:var(--ink); color:#fff; border-radius:11px; padding:12px 14px; font-size:0.87rem;
+    box-shadow:0 10px 28px rgba(0,0,0,0.25); display:flex; align-items:center; gap:9px;
+    transform:translateX(12px); opacity:0; transition:transform .2s ease, opacity .2s ease;
+    border-left:3px solid var(--success);
+  }
+  .toast.danger-toast{ border-left-color:var(--danger); }
+  .toast.show{ transform:translateX(0); opacity:1; }
+
+  .d-none{ display:none !important; }
+  ::selection{ background:rgba(109,93,246,0.25); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-inner">
+      <div class="hero-title">
+        <div class="hero-mark">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 8l9-4.5L21 8l-9 4.5L3 8z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M7 10.3v4.2c0 1.4 2.2 2.8 5 2.8s5-1.4 5-2.8v-4.2" stroke="#fff" stroke-width="1.7"/></svg>
+        </div>
+        <div>
+          <h1>Classroom</h1>
+          <p>Your student directory, all in one place</p>
+        </div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-tile"><b id="statTotal">0</b><span>Total students</span></div>
+      <div class="stat-tile"><b id="statDepts">0</b><span>Departments</span></div>
+      <div class="stat-tile"><b id="statAvgSem">0</b><span>Average semester</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="grid" style="margin-top:46px;">
+    <!-- Add / Edit -->
+    <div class="panel entry-card">
+      <div class="entry-card-top"></div>
+      <div class="entry-card-body">
+        <h2 id="formTitle">Add a student</h2>
+        <p class="sub" id="formSub">Fill in their details to add them to the directory.</p>
+
+        <form id="studentForm" novalidate>
+          <input type="hidden" id="studentId">
+
+          <div class="field" id="f-name">
+            <label for="name">Full name</label>
+            <input type="text" id="name" placeholder="e.g. Ayesha Khan">
+            <div class="err">Enter the student's name.</div>
+          </div>
+
+          <div class="field" id="f-roll">
+            <label for="roll">Roll number</label>
+            <input type="text" id="roll" placeholder="e.g. FA23-BCS-045">
+            <div class="err">Enter a roll number.</div>
+          </div>
+
+          <div class="field" id="f-email">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="student@example.com">
+            <div class="err">Enter a valid email address.</div>
+          </div>
+
+          <div class="field-row">
+            <div class="field" id="f-department">
+              <label for="department">Department</label>
+              <select id="department">
+                <option value="" selected disabled>Choose one</option>
+                <option>Computer Science</option>
+                <option>Software Engineering</option>
+                <option>Business Administration</option>
+                <option>Electrical Engineering</option>
+                <option>Mathematics</option>
+                <option>Other</option>
+              </select>
+              <div class="err">Choose a department.</div>
+            </div>
+            <div class="field" id="f-semester">
+              <label for="semester">Semester</label>
+              <input type="number" id="semester" min="1" max="12" placeholder="1–12">
+              <div class="err">Enter 1–12.</div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-grad" id="submitBtn">Add student</button>
+            <button type="button" class="btn btn-ghost d-none" id="cancelEditBtn">Cancel edit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="panel list-card">
+      <div class="list-head">
+        <h2>Directory</h2>
+        <div class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="text" id="searchBox" placeholder="Search name or roll no.">
+        </div>
+      </div>
+
+      <div class="chip-row" id="chipRow"></div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th style="width:50px">Sem</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty d-none" id="emptyState">
+        <div class="empty-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.8"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <span id="emptyHeadline">The directory is empty</span>
+        <p id="emptyBody">Add the first student using the form on the left.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="deleteOverlay">
+  <div class="modal">
+    <h3>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.9L2.7 17a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Remove student
+    </h3>
+    <p>Remove <strong id="deleteName"></strong> from the directory? This can't be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelDeleteBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-host" id="toastHost"></div>
+
+<script>
+(function(){
+  const deptColors = {
+    "Computer Science": "var(--dept-cs)",
+    "Software Engineering": "var(--dept-se)",
+    "Business Administration": "var(--dept-ba)",
+    "Electrical Engineering": "var(--dept-ee)",
+    "Mathematics": "var(--dept-ma)",
+    "Other": "var(--dept-ot)"
+  };
+
+  let students = [
+    { id: 1, name: "Ayesha Khan", roll: "FA23-BCS-045", email: "ayesha.khan@example.com", department: "Computer Science", semester: 4 },
+    { id: 2, name: "Bilal Ahmed", roll: "FA22-SE-012", email: "bilal.ahmed@example.com", department: "Software Engineering", semester: 6 },
+    { id: 3, name: "Sara Malik", roll: "FA23-BA-078", email: "sara.malik@example.com", department: "Business Administration", semester: 2 }
+  ];
+  let nextId = 4;
+  let editingId = null;
+  let deleteTargetId = null;
+  let lastAddedId = null;
+  let activeFilter = 'All';
+
+  const form = document.getElementById('studentForm');
+  const tbody = document.getElementById('studentTableBody');
+  const emptyState = document.getElementById('emptyState');
+  const emptyHeadline = document.getElementById('emptyHeadline');
+  const emptyBody = document.getElementById('emptyBody');
+  const statTotal = document.getElementById('statTotal');
+  const statDepts = document.getElementById('statDepts');
+  const statAvgSem = document.getElementById('statAvgSem');
+  const searchBox = document.getElementById('searchBox');
+  const chipRow = document.getElementById('chipRow');
+  const submitBtn = document.getElementById('submitBtn');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const formTitle = document.getElementById('formTitle');
+  const formSub = document.getElementById('formSub');
+  const overlay = document.getElementById('deleteOverlay');
+
+  const fields = {
+    name:      { el: document.getElementById('name'), wrap: document.getElementById('f-name'), validate: v => v.trim().length > 0 },
+    roll:      { el: document.getElementById('roll'), wrap: document.getElementById('f-roll'), validate: v => v.trim().length > 0 },
+    email:     { el: document.getElementById('email'), wrap: document.getElementById('f-email'), validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) },
+    department:{ el: document.getElementById('department'), wrap: document.getElementById('f-department'), validate: v => v.trim().length > 0 },
+    semester:  { el: document.getElementById('semester'), wrap: document.getElementById('f-semester'), validate: v => { const n = parseInt(v,10); return n>=1 && n<=12; } }
+  };
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+  function initials(name){
+    const parts = name.trim().split(/\s+/);
+    return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+  }
+
+  function showToast(message, kind){
+    const div = document.createElement('div');
+    div.className = 'toast' + (kind === 'danger' ? ' danger-toast' : '');
+    div.textContent = message;
+    document.getElementById('toastHost').appendChild(div);
+    requestAnimationFrame(() => div.classList.add('show'));
+    setTimeout(() => {
+      div.classList.remove('show');
+      setTimeout(() => div.remove(), 200);
+    }, 2400);
+  }
+
+  function validateAll(){
+    let ok = true;
+    Object.values(fields).forEach(f => {
+      const valid = f.validate(f.el.value);
+      f.wrap.classList.toggle('invalid', !valid);
+      if (!valid) ok = false;
+    });
+    return ok;
+  }
+  Object.values(fields).forEach(f => {
+    f.el.addEventListener('input', () => f.wrap.classList.remove('invalid'));
+    f.el.addEventListener('change', () => f.wrap.classList.remove('invalid'));
+  });
+
+  function renderChips(){
+    const present = Array.from(new Set(students.map(s => s.department)));
+    if (!present.includes(activeFilter)) activeFilter = 'All';
+    const all = ['All', ...present];
+    chipRow.innerHTML = all.map(d => {
+      const color = d === 'All' ? null : deptColors[d];
+      const style = color ? `style="--dot:${color}"` : '';
+      return `<button class="chip${d === activeFilter ? ' active' : ''}" ${style} onclick="app.filterBy('${d.replace(/'/g,"\\'")}')">
+        ${d !== 'All' ? '<span class="dot"></span>' : ''}${escapeHtml(d)}
+      </button>`;
+    }).join('');
+  }
+
+  function render(){
+    const query = searchBox.value.trim().toLowerCase();
+    const filtered = students.filter(s =>
+      (activeFilter === 'All' || s.department === activeFilter) &&
+      (s.name.toLowerCase().includes(query) || s.roll.toLowerCase().includes(query))
+    );
+
+    statTotal.textContent = students.length;
+    statDepts.textContent = new Set(students.map(s => s.department)).size;
+    statAvgSem.textContent = students.length ? (students.reduce((a,s) => a + s.semester, 0) / students.length).toFixed(1) : '0';
+
+    renderChips();
+
+    if (filtered.length === 0){
+      tbody.innerHTML = '';
+      emptyState.classList.remove('d-none');
+      if (students.length === 0){
+        emptyHeadline.textContent = 'The directory is empty';
+        emptyBody.textContent = 'Add the first student using the form on the left.';
+      } else {
+        emptyHeadline.textContent = 'No matches';
+        emptyBody.textContent = 'Try a different search or filter.';
+      }
+    } else {
+      emptyState.classList.add('d-none');
+      tbody.innerHTML = filtered.map(s => {
+        const color = deptColors[s.department] || 'var(--dept-ot)';
+        return `
+        <tr${s.id === lastAddedId ? ' class="row-enter"' : ''}>
+          <td>
+            <div class="who">
+              <div class="avatar" style="--dot:${color}">${initials(s.name)}</div>
+              <div>
+                <div class="who-name">${escapeHtml(s.name)}</div>
+                <div class="who-roll">${escapeHtml(s.roll)}</div>
+              </div>
+            </div>
+          </td>
+          <td>${escapeHtml(s.email)}</td>
+          <td><span class="dept-tag" style="--dot:${color}"><span class="dot"></span>${escapeHtml(s.department)}</span></td>
+          <td>${escapeHtml(s.semester)}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn-icon" title="Edit" onclick="app.edit(${s.id})">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="btn-icon danger" title="Remove" onclick="app.askDelete(${s.id})">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+    lastAddedId = null;
+  }
+
+  function resetForm(){
+    form.reset();
+    Object.values(fields).forEach(f => f.wrap.classList.remove('invalid'));
+    editingId = null;
+    document.getElementById('studentId').value = '';
+    submitBtn.textContent = 'Add student';
+    formTitle.textContent = 'Add a student';
+    formSub.textContent = "Fill in their details to add them to the directory.";
+    cancelEditBtn.classList.add('d-none');
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (!validateAll()) return;
+
+    const data = {
+      name: fields.name.el.value.trim(),
+      roll: fields.roll.el.value.trim(),
+      email: fields.email.el.value.trim(),
+      department: fields.department.el.value,
+      semester: parseInt(fields.semester.el.value, 10)
+    };
+
+    if (editingId){
+      const idx = students.findIndex(s => s.id === editingId);
+      if (idx > -1){
+        students[idx] = { id: editingId, ...data };
+        showToast(data.name + ' was updated');
+      }
+    } else {
+      const id = nextId++;
+      students.push({ id, ...data });
+      lastAddedId = id;
+      showToast(data.name + ' was added');
+    }
+
+    resetForm();
+    render();
+  });
+
+  cancelEditBtn.addEventListener('click', resetForm);
+  searchBox.addEventListener('input', render);
+
+  window.app = {
+    filterBy(d){ activeFilter = d; render(); },
+    edit(id){
+      const s = students.find(s => s.id === id);
+      if (!s) return;
+      editingId = id;
+      document.getElementById('studentId').value = id;
+      fields.name.el.value = s.name;
+      fields.roll.el.value = s.roll;
+      fields.email.el.value = s.email;
+      fields.department.el.value = s.department;
+      fields.semester.el.value = s.semester;
+      Object.values(fields).forEach(f => f.wrap.classList.remove('invalid'));
+      submitBtn.textContent = 'Save changes';
+      formTitle.textContent = 'Edit student';
+      formSub.textContent = 'Update their details, then save.';
+      cancelEditBtn.classList.remove('d-none');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      fields.name.el.focus();
+    },
+    askDelete(id){
+      const s = students.find(s => s.id === id);
+      if (!s) return;
+      deleteTargetId = id;
+      document.getElementById('deleteName').textContent = s.name;
+      overlay.classList.add('open');
+    }
+  };
+
+  document.getElementById('cancelDeleteBtn').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  document.getElementById('confirmDeleteBtn').addEventListener('click', function(){
+    if (deleteTargetId == null) return;
+    const s = students.find(s => s.id === deleteTargetId);
+    students = students.filter(s => s.id !== deleteTargetId);
+    overlay.classList.remove('open');
+    showToast((s ? s.name : 'Student') + ' was removed', 'danger');
+    if (editingId === deleteTargetId) resetForm();
+    deleteTargetId = null;
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
